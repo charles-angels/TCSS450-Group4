@@ -1,22 +1,20 @@
 package edu.uw.tcss450.tcss450_group4.ui;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.graphics.Typeface;
 import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.SearchView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -97,14 +95,11 @@ import static edu.uw.tcss450.tcss450_group4.model.WeatherHelper.sendPostAsyncTas
 import static edu.uw.tcss450.tcss450_group4.model.WeatherHelper.tempFromKelvinToCelsiusString;
 import static edu.uw.tcss450.tcss450_group4.model.WeatherHelper.tempFromKelvinToFahrenheitString;
 
-///**
-// * A simple {@link Fragment} subclass.
-// * Activities that contain this fragment must implement the
-// * {@link WeatherFragment.OnFragmentInteractionListener} interface
-// * to handle interaction events.
-// * Use the {@link WeatherFragment#newInstance} factory method to
-// * create an instance of this fragment.
-// */
+/**
+ * A simple {@link Fragment} subclass.
+ * Activities that contain this fragment must implement the
+ * @author Ken Gil Romero kgmr
+ */
 public class WeatherFragment extends Fragment {
 
     // the tag for weather
@@ -154,9 +149,6 @@ public class WeatherFragment extends Fragment {
     //the temp location count
     private int mTempLocationsCount;
 
-    //the location count
-    private int mLocationsCount;
-
     // check if rows is updated
     private boolean mRowsUpdated;
 
@@ -195,7 +187,7 @@ public class WeatherFragment extends Fragment {
 
     /**
      * initialization of the fields
-     * @param view
+     * @param view the view of the  weather
      */
     private void initialization(@NonNull View view) {
 
@@ -227,21 +219,37 @@ public class WeatherFragment extends Fragment {
     private void setComponents() {
         //TODO don't need to always do, just once
         mView.findViewById(layout_weather_clickable).setOnClickListener(e -> toggleMainFab());
-        View zipView = mView.findViewById(weather_zipEditText);
-        zipView.setOnKeyListener((v, keyCode, event) ->
-                zipKeyListener(v, keyCode));
-//        zipView.setOnClickListener(e ->
+        SearchView zipView = mView.findViewById(weather_zipEditText);
+        zipView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                attemptGetWeatherZip();
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                ifFabOpenCloseIt();
+                return false;
+            }
+        });
+        zipView.setOnSearchClickListener(v -> ifFabOpenCloseIt());
+//        zipView.setOnKeyListener((v, keyCode, event) ->
+//                zipKeyListener(v, keyCode));
+//        zipView.setOnClickListener(e -> {
+//                    ifFabOpenCloseIt();
+//                    setToast("Get the current weather condition and forecasts of the given zip code");
+//                });
+//        zipView.setOnLongClickListener(e ->
 //                setToast("Get the current weather condition and forecasts of the given zip code"));
-        zipView.setOnLongClickListener(e ->
-                setToast("Get the current weather condition and forecasts of the given zip code"));
-        zipView.setOnClickListener(e -> {
-            ifFabOpenCloseIt();
-            setToast("Get the current weather condition and forecasts of the given zip code");
-        });
-        zipView.setOnFocusChangeListener((v, hasFocus) -> {
-            ifFabOpenCloseIt();
-            setToast("Get the current weather condition and forecasts of the given zip code");
-        });
+//        zipView.setOnClickListener(e -> {
+//            ifFabOpenCloseIt();
+//            setToast("Get the current weather condition and forecasts of the given zip code");
+//        });
+//        zipView.setOnFocusChangeListener((v, hasFocus) -> {
+//            ifFabOpenCloseIt();
+//            setToast("Get the current weather condition and forecasts of the given zip code");
+//        });
 //        mView.findViewById(weather_getZipButton).setOnLongClickListener(v ->
 //                setToast("Get the current weather condition and forecasts of the given zip code"));
 //        mView.findViewById(weather_getZipButton).setOnClickListener(v -> attemptGetWeatherZip());
@@ -281,23 +289,23 @@ public class WeatherFragment extends Fragment {
         setWeather();
     }
 
-    /**
-     * the linstener for the zip key
-     * @param tView the view of the fragment
-     * @param tKey the key
-     * @return the boolean if successful
-     */
-    public boolean zipKeyListener(View tView, int tKey) {
-        if (tKey == KeyEvent.KEYCODE_ENTER || tKey == KeyEvent.KEYCODE_DPAD_CENTER) {
-            attemptGetWeatherZip();
-            InputMethodManager mgr = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-            mgr.hideSoftInputFromWindow(tView.getWindowToken(), 0);
-            return true;
-        } else {
-            ifFabOpenCloseIt();
-        }
-        return false;
-    }
+//    /**
+//     * the linstener for the zip key
+//     * @param tView the view of the fragment
+//     * @param tKey the key
+//     * @return the boolean if successful
+//     */
+//    public boolean zipKeyListener(View tView, int tKey) {
+//        if (tKey == KeyEvent.KEYCODE_ENTER || tKey == KeyEvent.KEYCODE_DPAD_CENTER) {
+//            attemptGetWeatherZip();
+//            InputMethodManager mgr = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+//            mgr.hideSoftInputFromWindow(tView.getWindowToken(), 0);
+//            return true;
+//        } else {
+//            ifFabOpenCloseIt();
+//        }
+//        return false;
+//    }
 
     /**
      * get current location weather and set the view
@@ -794,7 +802,8 @@ public class WeatherFragment extends Fragment {
             Log.d(TAG, result);
             JSONObject root = new JSONObject(result);
 
-            mLocationsCount = root.getInt(getString(keys_json_count));
+            //the location count
+            int mLocationsCount = root.getInt(getString(keys_json_count));
             if (!mRowsUpdated) {
                 mTempLocationsCount = mLocationsCount;
                 mRowsUpdated = true;
@@ -870,16 +879,23 @@ public class WeatherFragment extends Fragment {
      */
     private void attemptGetWeatherZip() {
         boolean success = true;
-            EditText et = mView.findViewById(weather_zipEditText);
-            String zip = et.getText().toString().trim();
+            SearchView et = mView.findViewById(weather_zipEditText);
+            String zip = et.getQuery().toString().trim();
 
             if (zip.equals("")) {
                 success = false;
-                et.setError("empty!!");
+//                ((EditText) et.findViewById(et.getContext()
+////                        .getResources()
+////                        .getIdentifier("weather_zipEditText", null
+////                                , null))).setError("empty!!");
+//                et.findViewById(weather_zipEditText)
+
+                setToast("empty!");
         }
 
         if (success) {
-            getWeatherZip();
+            getWeatherZip(zip);
+            et.onActionViewCollapsed();
         }
     }
 
@@ -1176,6 +1192,13 @@ public class WeatherFragment extends Fragment {
 //        getRowsWeather();
     }
 
+    /**
+     * when the view is created
+     * @param inflater the inflater for the view
+     * @param container the container for the view
+     * @param savedInstanceState the saved instance state
+     * @return the view
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -1186,8 +1209,8 @@ public class WeatherFragment extends Fragment {
     /**
      * gets the weather zip
      */
-    private void getWeatherZip() {
-        String zip = ((EditText)mView.findViewById(weather_zipEditText)).getText().toString().trim();
+    private void getWeatherZip(String tZip) {
+//        String zip = ((EditText)mView.findViewById(weather_zipEditText)).getText().toString().trim();
 //        Uri uri = getUriWeatherCurrentLatLon(getContext());
 //
 //        Uri uri2 = getUriWeather10dLatLon(getContext());
@@ -1222,7 +1245,7 @@ public class WeatherFragment extends Fragment {
 
         Uri uri3 = getUriWeather24hZip(getContext());
 
-        JSONObject msg = WeatherHelper.getJsonObjectZip(zip);
+        JSONObject msg = WeatherHelper.getJsonObjectZip(tZip);
 
 //        new SendPostAsyncTask.Builder(uri.toString(), msg)
 //                .onPostExecute(this::endOfGetWeatherTask)

@@ -65,6 +65,11 @@ public class ViewChatFragment extends Fragment {
         // Required empty public constructor
     }
 
+    /**
+     * Instantiates ViewChatFragment
+     * @param columnCount
+     * @return
+     */
     public static ViewChatFragment newInstance(int columnCount) {
         ViewChatFragment fragment = new ViewChatFragment();
         Bundle args = new Bundle();
@@ -72,6 +77,11 @@ public class ViewChatFragment extends Fragment {
         fragment.setArguments(args);
         return fragment;
     }
+
+    /**
+     * On Creates ViewChat and initializes arguments
+     * @param savedInstanceState
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,6 +102,9 @@ public class ViewChatFragment extends Fragment {
         }
     }
 
+    /**
+     * On Start where messages are updated
+     */
     @Override
     public void onStart() {
         super.onStart();
@@ -108,14 +121,26 @@ public class ViewChatFragment extends Fragment {
 
     }
 
-
+    /**
+     * On Create View
+     * @param inflater
+     * @param container
+     * @param savedInstanceState
+     * @return View
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+
         return inflater.inflate(R.layout.fragment_view_chat, container, false);
     }
 
+    /**
+     * On View Created that sets up messages in chat
+     * @param view
+     * @param savedInstanceState
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -141,6 +166,10 @@ public class ViewChatFragment extends Fragment {
 
     }
 
+    /**
+     * Handles the message to send
+     * @param theButton
+     */
     private void handleSendClick(final View theButton) {
         String msg = mMessageInputEditText.getText().toString();
         Log.d("MESSAGE", "CLICKED");
@@ -169,6 +198,10 @@ public class ViewChatFragment extends Fragment {
 
     }
 
+    /**
+     * Handling of asynchronous task after message sent
+     * @param result
+     */
     private void endOfSendMsgTask(final String result) {
         try {
             //This is the result from the web service
@@ -190,6 +223,9 @@ public class ViewChatFragment extends Fragment {
         }
     }
 
+    /**
+     * Register Push Message receiver
+     */
     @Override
     public void onResume() {
         super.onResume();
@@ -201,6 +237,9 @@ public class ViewChatFragment extends Fragment {
 
     }
 
+    /**
+     * Unregister Push Message receiver
+     */
     @Override
     public void onPause() {
         super.onPause();

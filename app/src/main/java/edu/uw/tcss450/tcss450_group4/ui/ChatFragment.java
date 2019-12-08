@@ -104,9 +104,15 @@ public class ChatFragment extends Fragment implements View.OnClickListener {
         return fragment;
     }
 
+    /**
+     * On Create. Sets the arguments
+     * @param savedInstanceState
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Log.e("ViewChat", getArguments() + "");
 
         ChatFragmentArgs args = ChatFragmentArgs.fromBundle(getArguments());
         mChats = new ArrayList<>(Arrays.asList(args.getChats()));
@@ -116,6 +122,13 @@ public class ChatFragment extends Fragment implements View.OnClickListener {
         mChatMessage = args.getChatMessage();
     }
 
+    /**
+     * On Create View
+     * @param inflater
+     * @param container
+     * @param savedInstanceState
+     * @return View
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -127,6 +140,11 @@ public class ChatFragment extends Fragment implements View.OnClickListener {
         return view;
     }
 
+    /**
+     * On View Created. Sets up the chat list
+     * @param view
+     * @param savedInstanceState
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -147,21 +165,34 @@ public class ChatFragment extends Fragment implements View.OnClickListener {
         }
         btnCreateChat.setOnClickListener(this::onClick);
         if (mChatMessage != null) {
+
             displayChat(mChatMessage.getChatId());
+            mChatMessage = null;
 
         }
     }
 
+    /**
+     * On Resume
+     */
     @Override
     public void onResume() {
         super.onResume();
     }
 
+    /**
+     * When create chat is clicked, loads connections
+     * @param v
+     */
     @Override
     public void onClick(View v) {
         gotoConnection();
         MyCreateChatRecyclerViewAdapter.getFriendIDList().clear();
     }
+
+    /**
+     * Goes to connection to fetch connections list
+     */
     private void gotoConnection() {
         Uri uriConnection = new Uri.Builder()
                 .scheme("https")
@@ -184,6 +215,10 @@ public class ChatFragment extends Fragment implements View.OnClickListener {
 
     }
 
+    /**
+     * Handles connections on post execution of async task
+     * @param result
+     */
     private void handleConnectionOnPostExecute(final String result) {
         //parse JSON
         try {
@@ -231,6 +266,11 @@ public class ChatFragment extends Fragment implements View.OnClickListener {
             e.printStackTrace();
         }
     }
+
+    /**
+     * Displays all chats user is a part of
+     * @param chatId
+     */
     private void displayChat(final String chatId){
 
         mChatId = chatId;
@@ -254,6 +294,10 @@ public class ChatFragment extends Fragment implements View.OnClickListener {
 
     }
 
+    /**
+     * Handles messages received after successful async task
+     * @param result
+     */
     private void handleMessageGetOnPostExecute(final String result) {
         try {
             JSONObject root = new JSONObject(result);
@@ -289,25 +333,44 @@ public class ChatFragment extends Fragment implements View.OnClickListener {
             Log.e("ERROR!", e.getMessage());
         }
     }
+
+    /**
+     * Handle errors if async task fails
+     * @param result
+     */
     private void handleErrorsInTask(final String result) {
         getActivity().findViewById(layout_homeActivity_wait).setVisibility(View.GONE);
         Log.e("ASYNC_TASK_ERROR", result);
     }
+
+    /**
+     * Convert timestamp to human-readable format
+     * @param timestamp
+     * @return time and date
+     */
     private String convertTimeStampToDate(String timestamp) {
         Date date = new Date();
-        String result = "";
+        String a = "";
+        //Date showTime = new Date();
+        //Date showDate = new Date();
         DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         DateFormat timeFormat = new SimpleDateFormat("HH:mm");
+        DateFormat daysFormat = new SimpleDateFormat("MMM dd yyyy hh:mm a");
+        //DateFormat dateFormat = new SimpleDateFormat("MM-dd");
         try {
             date = format.parse(timestamp);
-            result = timeFormat.format(date.getTime());
+            a = daysFormat.format(date.getTime());
         } catch (ParseException e) {
             e.printStackTrace();
         }
 
-        return result;
+        return a;
     }
 
+    /**
+     * Get memberId
+     * @return memberId
+     */
     public int getmMemberId() {
         return mMemberId;
     }

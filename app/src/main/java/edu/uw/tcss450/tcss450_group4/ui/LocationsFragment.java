@@ -93,12 +93,28 @@ public class LocationsFragment extends Fragment {
      */
     private Weather[] mWeathers10d;
 
-    // TODO: Customize parameter argument names
+    /**
+     * the column string
+     */
     private static final String ARG_COLUMN_COUNT = "column-count";
-    // TODO: Customize parameters
+
+    //the column count
     private int mColumnCount = 1;
+
+    /**
+     * the recycler view
+     */
     private RecyclerView mRv;
+
+    /**
+     * a flag if delete mode is on
+     */
     private boolean mDeleteFlag;
+
+    /**
+     * a flag if there is no location
+     */
+    private boolean mNoLocation;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -107,15 +123,18 @@ public class LocationsFragment extends Fragment {
     public LocationsFragment() {
     }
 
-    // TODO: Customize parameter initialization
-    @SuppressWarnings("unused")
-    public static LocationsFragment newInstance(int columnCount) {
-        LocationsFragment fragment = new LocationsFragment();
-        Bundle args = new Bundle();
-        args.putInt(ARG_COLUMN_COUNT, columnCount);
-        fragment.setArguments(args);
-        return fragment;
-    }
+//    /**
+//     *
+//     * @param columnCount
+//     * @return
+//     */
+//    public static LocationsFragment newInstance(int columnCount) {
+//        LocationsFragment fragment = new LocationsFragment();
+//        Bundle args = new Bundle();
+//        args.putInt(ARG_COLUMN_COUNT, columnCount);
+//        fragment.setArguments(args);
+//        return fragment;
+//    }
 
 //    @Override
 //    public void onCreate(Bundle savedInstanceState) {
@@ -126,16 +145,25 @@ public class LocationsFragment extends Fragment {
 //        }
 //    }
 
-
+    /**
+     *
+     * @param inflater to inflate the view
+     * @param container the contatiner of the list
+     * @param savedInstanceState the saved instance state
+     * @return view list
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(layout.fragment_locations_list, container
+        return inflater.inflate(layout.fragment_locations_list, container
                 , false);
-
-        return view;
     }
 
+    /**
+     * when view is created
+     * @param view the view
+     * @param savedInstanceState the saved instance state
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -164,6 +192,11 @@ public class LocationsFragment extends Fragment {
         fab.setOnClickListener(v -> toggleDelete(fab, view));
     }
 
+    /**
+     *
+     * @param tFab the fab toggled
+     * @param tView the view changed
+     */
     private void toggleDelete(FloatingActionButton tFab, View tView) {
         if (mDeleteFlag) {
 //            RecyclerView root = getView().findViewById(R.id.location_list);
@@ -188,7 +221,7 @@ public class LocationsFragment extends Fragment {
             tView.setBackgroundColor(Color.WHITE);
             mDeleteFlag = false;
             setToast("DELETE MODE: OFF");
-        } else {
+        } else if (!mNoLocation){
             mRv.setAdapter(new MyLocationsRecyclerViewAdapter(mLocations
                     , this::getClick, false));
 //            RecyclerView root = getView().findViewById(R.id.location_list);
@@ -201,8 +234,10 @@ public class LocationsFragment extends Fragment {
             tFab.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(
                     Objects.requireNonNull(getContext()), R.color.uwPurple)));
             tView.setBackgroundColor(Color.BLACK);
-            mDeleteFlag = true;
+            mDeleteFlag = true;;
             setToast("DELETE MODE: ON");
+        } else {
+            setToast("DELETE MODE: OFF, You can't delete a location when there is no location");
         }
     }
 
@@ -229,6 +264,7 @@ public class LocationsFragment extends Fragment {
         LocationsFragmentArgs args = LocationsFragmentArgs.fromBundle(
                 Objects.requireNonNull(getArguments()));
         mLocations = new ArrayList<>(Arrays.asList(args.getLocations()));
+        mNoLocation = mLocations.size() == 0;
         mEmail =  args.getEmail();
         mJwToken = args.getJwt();
     }
@@ -250,7 +286,7 @@ public class LocationsFragment extends Fragment {
 
     /**
      * get the weather of the location
-     * @param tLocation
+     * @param tLocation the location of the clicked
      */
     private void getClick(final Location tLocation) {
         if (!mDeleteFlag) {
@@ -269,7 +305,7 @@ public class LocationsFragment extends Fragment {
             } else {
                 alert("Cannot display any weather", getContext());
             }
-        } else {
+        } else if (!mNoLocation){
             if (!tLocation.getName().equals("No Locations")) {
                 AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
                 alertDialog.setTitle("Alert");
@@ -286,10 +322,14 @@ public class LocationsFragment extends Fragment {
         }
     }
 
+    /**
+     * delete the location
+     * @param tLocation the location to be deleted
+     */
     private void deleteLocation(final Location tLocation) {
         mLocations.remove(tLocation);
         mRv.setAdapter(new MyLocationsRecyclerViewAdapter(mLocations
-                , this::getClick, mDeleteFlag));
+                , this::getClick, false));
         setToast("Deleted " + tLocation.getName());
 
         JSONObject msg = new JSONObject();
@@ -338,7 +378,7 @@ public class LocationsFragment extends Fragment {
      * @param tLocation the given location
      */
     private void displayWeather(final Location tLocation) {
-        //TODO use zip
+
         Uri uri = getUriWeatherCurrentLatLon(Objects.requireNonNull(getContext()));
 
         Uri uri2 = getUriWeather10dLatLon(getContext());
